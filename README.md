@@ -108,26 +108,6 @@ rosrun map_server map_saver -f mymap
 #### Mapping Instructions (for turtlebot):
 Please follow the similar instructions on the real turtlebot [here](https://learn.turtlebot.com/2015/02/01/11/)
 
-
-#### ASTAR Instructions for path planning given pgm --> from saved map
-In three terminals run the following:
-```
-roslaunch multi_jackal_tutorials two_jackal_navstack.launch
-roslaunch astar astar_capstone.launch
-rosrun multi_jackal_tutorials multi-apf-jackal-navstack.py
-```
-You can now use move_base to move the jackals to coordinate goals. I have tested the solution with the current implementation. Both robots now map using gmapping. Gmapping calls a published pose from the gazebo states. All launch files also publish a series of transforms or run python files in order to publish the needed topics. I double checked and the astar is also path planning from the initial locations -- I also made sure that the robot is truly arriving at the right location -- I think the previous error was potentially user error or a pgm mapping issue. It should be solved in this iteration. 
-
-NOTE: The move base can be finicky so rerun if it gets stuck
-
-TODO: Make identifying location of cities/tasks easier by storing 2D Nav goals in Rviz rather than putting them in via array in dictionary 
-
-You can play with the Astar package by running
-```
-roslaunch astar astar.launch
-```
-An rviz screen will pop up and you can select a pose estimate in the top toolbar by clicking the tool and then selecting a location on the map. Then select a 2D Nav Goal similarly and it should show you the resultant astar path.
-
 ## multi_jackal_base
 Contains a single launch file that calls all other jackal components.
 
@@ -146,6 +126,4 @@ Make sure the file `multi_jackal_description/scripts/env_run` is executable.
 
 Example launch files can be found in `multi_jackal_tutorials/launch`. Gazebo can be viewed with `gzclient` in another terminal.
 
-NOTE: rviz folder and config are included but Noetic's TF handling has been completely reworked, one robot can be visualized but multiple is not yet implemented
-TODO: fix TF tree and rviz
-# multi_jackal_amcl
+NOTE: rviz folder can visualize any number of robots
