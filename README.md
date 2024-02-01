@@ -148,3 +148,4 @@ Example launch files can be found in `multi_jackal_tutorials/launch`. Gazebo can
 
 NOTE: rviz folder and config are included but Noetic's TF handling has been completely reworked, one robot can be visualized but multiple is not yet implemented
 TODO: fix TF tree and rviz
+# multi_jackal_amcl
