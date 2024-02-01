@@ -1,0 +1,22 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+    <arg name = "map_file" default = "$(find astar)/maps/raceworld.yaml" />
+
+    ################ map server ################
+    <!-- <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/> -->
+
+    ################ start astar node ################
+    <node pkg="astar" type="test_astar" name="test_astar" output="screen">
+        <param name="Euclidean" value="true"/>
+        <param name="OccupyThresh" value="-1"/>
+        <param name="InflateRadius" value="0.25"/>
+        <param name="rate" value="10"/>
+    </node>
+
+    ################ start path interogator ################
+    <!-- <node pkg="multi_jackal_tutorials" type="run_astar_amcl.py" name="run_astar_amcl" output="screen"/> -->
+
+    ################ start rviz ################
+    <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find astar)/rviz/astar.rviz"/> -->
+
+</launch>

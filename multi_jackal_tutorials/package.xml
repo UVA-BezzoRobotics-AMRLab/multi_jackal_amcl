@@ -1,0 +1,24 @@
+<package>
+  <name>multi_jackal_tutorials</name>
+  <version>0.0.5</version>
+  <description>Tutorials for multi-Jackal simulations.</description>
+  
+  <maintainer email="rpeddi1@gmail.com">Rahul Peddi</maintainer>
+  <author     email="rpeddi1@gmail.com">Rahul Peddi</author>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/multi_jackal_tutorials</url>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roslaunch</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>multi_jackal_base</build_depend>
+  <build_depend>rviz</build_depend>
+  <run_depend>gazebo_ros</run_depend>
+  <run_depend>multi_jackal_base</run_depend>
+  <run_depend>rviz</run_depend>
+</package>
