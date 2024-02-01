@@ -53,6 +53,19 @@ The problem is that it isn't scalable. They use the same transformation tree and
 some message names. You can see the problem yourself if you spawn two and have a 
 look at the topics and TF tree.
 
+# Using AMCL
+```
+roslaunch multi_jackal_tutorials two_jackal_amcl.launch map_file:=your/map/file
+```
+After doing this, an RVIZ will pop up with the estimated pose of both robots (initialized at [0,0,0] if using no transforms). Change the topic of the 2D pose estimate using the tool in the top left (i.e. `/jackal0/initialpose` for jackal0) then estimate the pose of the Jackal. 
+
+### Additional use for AMCL -- multiple traveling salesman solver
+The previous launch file also launched an Astar node. Running the following python script will initialize your mTSP
+```
+rosrun multi_jackal_tutorials multi-apf-jackal-astar.py
+```
+You can change the configuration file in `$(find multi_jackal_tutorials)/configs/example.yaml` to change city locations, velocities, number of agents, and the genetic algorithm parameters.
+
 # Files
 ## multi_jackal_tutorials
 The starting point for simulating the robots. Contains launch, config, and world files.
