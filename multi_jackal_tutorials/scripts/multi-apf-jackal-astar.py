@@ -8,7 +8,7 @@ from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 from std_msgs.msg import String
-
+import yaml, json, rospkg
 
 real_robot = False
 
@@ -31,26 +31,9 @@ def path_cb(msg):
     paths = eval(msg.data)    
     print(paths)
 
-# Initialize the dictionary for the environment
-string_msg = {
-    'cityCoordinates': [[-4,3],[-6,3]],
-    'numAgents': 2,
-    'numCities': 2,
-    'startPose': [[0,0],[0,1]],
-    'vels': [1,1],
-    'numGenerations': 10,
-    'populationSize': 10,
-    'mutationRate': 0.1,
-    'new_run': True
-}
-
-# Initialize dictionary
-dict_init = string_msg
-
 sub_names = ['jackal0/amcl_pose', 'jackal1/amcl_pose']
 pub_names = ['jackal0/jackal_velocity_controller/cmd_vel', 'jackal1/jackal_velocity_controller/cmd_vel']
-# Create the subscribers
-subs = [rospy.Subscriber(sub_names[i], PoseWithCovarianceStamped, pos_cb, (i)) for i in range(len(sub_names))]
+
 
 
 
@@ -58,6 +41,18 @@ if __name__ == '__main__':
 
     # Initialize the node
     rospy.init_node('multi_apf_jackal')
+
+    # Initialize the dictionary for the environment with a yaml file
+    rospack = rospkg.RosPack()
+    pkg_path = rospack.get_path('multi_jackal_tutorials')
+    with open(pkg_path + "/configs/example.yaml", "r") as stream:
+        try:
+            dict_init = eval(json.dumps(yaml.safe_load(stream)))
+        except yaml.YAMLError as exc:
+            print(exc)
+    dict_init['new_run'] = True
+    # Create the subscribers
+    subs = [rospy.Subscriber(sub_names[i], PoseWithCovarianceStamped, pos_cb, (i)) for i in range(len(sub_names))]
 
     # Create the path callback
     rospy.Subscriber('best_paths', String, path_cb)

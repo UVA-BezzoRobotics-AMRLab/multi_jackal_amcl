@@ -1,0 +1,9 @@
+#Yaml config file for the genetic algorithm
+'cityCoordinates': [[-4,3],[-6,3]] # coordinates of cities in map frame (recommend using clicked_point)
+'numAgents': 2 # number of agents
+'numCities': 2 # number of cities -> must match the number of cityCoordinates
+'startPose': [[0,0],[0,1]] # 2 agents -> not used and updated once subscribed to jackal amcl pose
+'vels': [1,1] # max velocity of vehicles
+'numGenerations': 10 # number of generations for GA
+'populationSize': 10 # number of children in each generation
+'mutationRate': 0.1 # mutation rate
