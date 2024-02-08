@@ -14,7 +14,7 @@
     </node>
 
     ################ start path interogator ################
-    <!-- <node pkg="multi_jackal_tutorials" type="run_astar_amcl.py" name="run_astar_amcl" output="screen"/> -->
+    <node pkg="multi_jackal_tutorials" type="run_astar_amcl.py" name="run_astar_amcl" output="screen"/>
 
     ################ start rviz ################
     <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find astar)/rviz/astar.rviz"/> -->
