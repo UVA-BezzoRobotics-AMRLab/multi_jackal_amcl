@@ -35,12 +35,13 @@ class PotentialField:
         self.d1 = d1 # d1 is the distance threshold for repulsion from other vehicles
 
     def attraction(self, q, q_goal):
-        return self.kappa_attr * (q_goal - q)
+        return self.kappa_attr * (q_goal - q)/(np.linalg.norm(q_goal - q) + 1e-6)
 
     def repulsion(self, q, q_obs, kappa_rep, d_thresh):
         dist = np.linalg.norm(q_obs - q)
         if dist < d_thresh:
-            return kappa_rep * (1.0 / dist - 1.0 / d_thresh) * (1.0 / dist**2)*(q_obs-q)
+            obs_return = (1.0 / dist - 1.0 / d_thresh) * (1.0 / dist**2)*(q_obs-q)
+            return kappa_rep * obs_return/(np.linalg.norm(obs_return) + 1e-6)
         return np.array([0, 0])
 
     def total_force(self, q, q_goal, q_obs_list, q_veh_list):
@@ -57,11 +58,13 @@ class PotentialField:
         theta_desired = ((math.atan2(force[1], force[0]) - q_ori) + math.pi) % (2 * math.pi) - math.pi
         # Normalize force to max_speed
         if max_speed < np.linalg.norm(force):
-            force = max_speed * (force / np.linalg.norm(force))
+            force = max_speed * (force / (np.linalg.norm(force) + 1e-6))
         elif np.linalg.norm(force) < 0.1:
             force = np.array([0, 0])
             theta_desired = 0
-
+        if math.isnan(theta_desired) or math.isnan(force[0]) or math.isnan(force[1]):
+            print("NAN")
+            return 0, 0
         # Finalize velocities
         linear_velocity = np.linalg.norm(force)
         angular_velocity = 5 * theta_desired # 5 is a gain

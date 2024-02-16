@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Control multiple jackals using APF"""
 
-from potential_field_class import PotentialField, get_model_pose
+from potential_field_class import PotentialField
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
@@ -44,7 +44,8 @@ if __name__ == '__main__':
 
     # Initialize the dictionary for the environment with a yaml file
     rospack = rospkg.RosPack()
-    pkg_path = rospack.get_path('multi_jackal_tutorials')
+    # pkg_path = rospack.get_path('multi_jackal_tutorials')
+    pkg_path = "/home/bezzo/multi_amcl_ws/src/multi_jackal_tutorials"
     with open(pkg_path + "/configs/example.yaml", "r") as stream:
         try:
             dict_init = eval(json.dumps(yaml.safe_load(stream)))
@@ -84,6 +85,8 @@ if __name__ == '__main__':
             dict_msg = str(dict_init)
             # Publish the message
             template_pub.publish(dict_msg)
+            dict_init['new_run'] = False
+
 
         # Check if the paths are published by astar node
         if len(paths) < 1:

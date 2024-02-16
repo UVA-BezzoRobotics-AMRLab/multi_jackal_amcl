@@ -11,7 +11,7 @@
   <arg name="config0_id" default="0"/>
   <arg name="config1"    default="front_laser"/>
   <arg name="config1_id" default="1"/>
-  <arg name="world"      default="waypoint.world"/>
+  <arg name="world"      default="jackal_race.world"/>
   <arg name="map_file"   default="$(find astar)/maps/raceworld.yaml" />
 
   <!-- Start Gazebo with an empty world. -->
