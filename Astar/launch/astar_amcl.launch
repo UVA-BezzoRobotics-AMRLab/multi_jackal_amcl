@@ -1,6 +1,7 @@
 <!-- -*- mode: XML -*- -->
 <launch>
     <arg name = "map_file" default = "$(find astar)/maps/raceworld.yaml" />
+    <!-- <arg name = "map_file" default = "$(find astar)/maps/hhmi_merged.yaml" /> -->
 
     ################ map server ################
     <!-- <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/> -->
@@ -9,7 +10,7 @@
     <node pkg="astar" type="test_astar" name="test_astar" output="screen">
         <param name="Euclidean" value="true"/>
         <param name="OccupyThresh" value="-1"/>
-        <param name="InflateRadius" value="0.25"/>
+        <param name="InflateRadius" value="0.4"/>
         <param name="rate" value="10"/>
     </node>
 

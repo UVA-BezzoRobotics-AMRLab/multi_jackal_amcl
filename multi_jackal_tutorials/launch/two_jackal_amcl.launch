@@ -11,8 +11,10 @@
   <arg name="config0_id" default="0"/>
   <arg name="config1"    default="front_laser"/>
   <arg name="config1_id" default="1"/>
+  <!-- <arg name="world"      default="stuff.world"/> -->
   <arg name="world"      default="jackal_race.world"/>
   <arg name="map_file"   default="$(find astar)/maps/raceworld.yaml" />
+  <!-- <arg name="map_file"   default="$(find astar)/maps/hhmi_merged.yaml" /> -->
 
   <!-- Start Gazebo with an empty world. -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">

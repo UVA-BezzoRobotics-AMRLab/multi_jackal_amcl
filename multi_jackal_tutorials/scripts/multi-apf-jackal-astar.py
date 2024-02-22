@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 """Control multiple jackals using APF"""
 
-from potential_field_class import PotentialField
+from potential_field_class import PotentialField, get_model_pose
 import rospy
 import numpy as np
+import math
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 from std_msgs.msg import String
+from sensor_msgs.msg import LaserScan
 import yaml, json, rospkg
 
 real_robot = False
 
 # Define the positions
-global pos, ori, paths, pos_received
+global pos, ori, paths, pos_received, obs_info
 pos = [np.array([0., 0.]), np.array([0., 0.])]
+obs_info = [None, None]
 pos_received = False
 ori = [0., 0.]
 paths = []
@@ -31,7 +34,20 @@ def path_cb(msg):
     paths = eval(msg.data)    
     print(paths)
 
+def scan_cb(msg, robot_index):
+    global obs_info
+    min_distance = min(msg.ranges)
+    min_index = msg.ranges.index(min_distance)
+    incontext_angle = msg.angle_min + (min_index * msg.angle_increment)
+    # normalizes the angle to 270 degrees of vision of laser scan and displaces it so that center of the blind spot is at -90 degrees
+    normalized_angle = (((incontext_angle - msg.angle_min) / (msg.angle_max - msg.angle_min)) * 270) - 45
+    # convert to rad
+    angle = normalized_angle * (math.pi/180)
+    # Store distance and angle
+    obs_info[robot_index] = (min_distance, angle)
+
 sub_names = ['jackal0/amcl_pose', 'jackal1/amcl_pose']
+scan_sub_names = ['jackal0/front/scan_v2', 'jackal1/front/scan_v2']
 pub_names = ['jackal0/jackal_velocity_controller/cmd_vel', 'jackal1/jackal_velocity_controller/cmd_vel']
 
 
@@ -45,7 +61,8 @@ if __name__ == '__main__':
     # Initialize the dictionary for the environment with a yaml file
     rospack = rospkg.RosPack()
     # pkg_path = rospack.get_path('multi_jackal_tutorials')
-    pkg_path = "/home/bezzo/multi_amcl_ws/src/multi_jackal_tutorials"
+    # pkg_path = "/home/bezzo/multi_amcl_ws/multi_jackal_tutorials"
+    pkg_path = "/home/bezzo/jackal_ws/src/multi_jackal_amcl/multi_jackal_tutorials"
     with open(pkg_path + "/configs/example.yaml", "r") as stream:
         try:
             dict_init = eval(json.dumps(yaml.safe_load(stream)))
@@ -54,6 +71,7 @@ if __name__ == '__main__':
     dict_init['new_run'] = True
     # Create the subscribers
     subs = [rospy.Subscriber(sub_names[i], PoseWithCovarianceStamped, pos_cb, (i)) for i in range(len(sub_names))]
+    scan_subs = [rospy.Subscriber(scan_sub_names[i], LaserScan, scan_cb, (i)) for i in range(len(scan_sub_names))]
 
     # Create the path callback
     rospy.Subscriber('best_paths', String, path_cb)
@@ -65,7 +83,7 @@ if __name__ == '__main__':
     template_pub = rospy.Publisher('string_msg', String, queue_size=1,latch=True)
 
     # Create the potential fields in a loop
-    fields = [PotentialField(kappa_attr=1, kappa_rep_obs=10, kappa_rep_veh=1.5, d0=2.0, d1=2.0) for i in range(len(sub_names))]
+    fields = [PotentialField(kappa_attr=1, kappa_rep_obs=-.1, kappa_rep_veh=1.5, d0=2.0, d1=2.0) for i in range(len(sub_names))]
 
     # Create the rate
     rate = rospy.Rate(10)
@@ -101,6 +119,12 @@ if __name__ == '__main__':
             # Get the velocities   
             max_speed = dict_init['vels'][i]
             #TODO: The empty array next to goal should have local obstacle positions in it (or the closest obstacle)
+            if obs_info[i] is not None:
+                obstacle_distance, obstacle_angle = obs_info[i]
+                obs_pos = np.array([pos[i][0] - (math.cos(obstacle_angle)*obstacle_distance), pos[i][1] + (math.sin(obstacle_angle)*obstacle_distance)])
+            else:
+                obs_pos = np.array([])
+            
             linear_velocity[i], angular_velocity[i] = fields[i].get_velocities(pos[i], ori[i], goal, [], [pos[j] for j in range(len(sub_names)) if j != i], max_speed)
 
             # Check if the goal has been reached
@@ -114,6 +138,7 @@ if __name__ == '__main__':
             print("Angular velocity: ", angular_velocity[i])
             print("Goal: ", goal)
             print("Position: ", pos[i])
+            print("Closest Object: ", obs_pos)
             print("--------------------")
 
         # Check if all goals have been reached

@@ -40,6 +40,7 @@ class GA:
         self.startPose = np.array(string_msg['startPose'])
         self.vels = string_msg['vels']
         self.cityCoordinates = np.array(string_msg['cityCoordinates'])
+        self.priorities = string_msg['priorities']
         self.start_pub = rospy.Publisher("start_point",PoseWithCovarianceStamped,queue_size=10)
         self.target_pub = rospy.Publisher("final_point",PoseStamped,queue_size=10)
         self.path_sub = rospy.Subscriber("/nav_path",Path, self.nav_path_cb)
@@ -142,7 +143,7 @@ class GA:
                     while not self.path_received and iters < 10:
                         self.publish_start(city1[0],city1[1],self.start_pub)
                         self.publish_target(city2[0],city2[1],self.target_pub)
-                        rospy.sleep(2)
+                        rospy.sleep(1)
                         iters+=1
                         # rospy.wait_for_message("/nav_path",Path)
                     if iters >= 10:
@@ -150,11 +151,37 @@ class GA:
                         return float('inf')
                     self.path_received = False
                     dist = self.path_cost / self.vels[k]
+
+                    # Prioritization
+                    priority = self.priorities[whichCity2]
+                    path_index = i
+                    # Linear:
+                    # if numCities > 1:
+                    #     if path_index == 1:
+                    #         totalDist[k] += dist * (1 + (priority / (numCities)))
+                    #     else:
+                    #         totalDist[k] += dist * (1 + priority*(path_index-.1) / (numCities))
+                    # elif numCities == 1:
+                    #     if priority > 1:
+                    #         totalDist[k] += dist / (priority-1)
+                    #     else:
+                    #         totalDist[k] += dist
+                    # Logarithmic:
+                    if numCities > 1:
+                        dist = dist * (1 + priority * (np.log(1+path_index)/np.log(numCities)))
+                    else:
+                        dist = dist
+                    
+                    # print(f"Agent {k+1} Path: {pathInds} Total Distance: {dist}")
+
                     self.path_cache[path_key] = {"cost": dist, "path": self.path_from_msg.tolist()}
+                    self.path_cache[(path_key[1], path_key[0])] = {"cost": dist, "path": self.path_from_msg.tolist()[::-1]}
 
                 totalDist[k] += dist
+                print(f"Agent {k+1} Path: {pathInds} Total Distance: {dist}")
             
         return np.max(totalDist)
+    
     
     def swapMutation(self, path):
         mutatedPath = np.copy(path)
@@ -279,7 +306,7 @@ class GA:
                 path_key = (whichCity1, whichCity2)
                 if i == 0:
                     bestPaths[agent].extend(self.path_cache[path_key]["path"])
-                    print(bestPaths[agent])
+                    # print(bestPaths[agent])
                 else:
                     bestPaths[agent].extend(self.path_cache[path_key]["path"][1:])
 

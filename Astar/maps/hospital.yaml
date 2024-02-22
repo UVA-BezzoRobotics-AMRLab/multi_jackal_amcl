@@ -1,0 +1,7 @@
+image: hospital.pgm
+resolution: 0.020000
+origin: [-45.840000, -31.760000, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+
