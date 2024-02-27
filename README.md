@@ -10,7 +10,7 @@ _This package is designed for Ubuntu 20/ROS Noetic. Make sure your system is run
 ```
 mkdir -p ~/jackal_ws/src
 cd ~/jackal_ws/
-catkin_make
+catkin build
 ```
 - Install and compile all the required base jackal noetic packages from clearpath:
 ```
@@ -21,15 +21,15 @@ git clone https://github.com/jackal/jackal_desktop.git
 git clone https://github.com/ros-visualization/interactive_marker_twist_server.git
 cd ~/jackal_ws
 rosdep install --from-paths . --ignore-src --rosdistro=noetic
-catkin_make
+catkin build
 ```
 - Install and compile this simulator in jackal_ws/src:
 ```
 cd src
-git clone https://github.com/laurenbramblett/multi-jackal-apf
+git clone https://github.com/laurenbramblett/multi_jackal_amcl
 cd ~/jackal_ws
 rosdep install --from-paths . --ignore-src
-catkin_make
+catkin build
 ```
 You are ready to run!
 
@@ -72,11 +72,9 @@ The starting point for simulating the robots. Contains launch, config, and world
 Starts up a Gazebo session and launches robots using `multi_jackal_base`.
 Example: `roslaunch multi_jackal_tutorials one_jackal.launch`.
 
-You can also move your jackals with the following python script after running a launch file such as the one above:
-`python3 ~/<multi-jackal-ws>/src/multi_jackal_tutorials/scripts/multi-jackal-apf.py`
 
 ### FOR CAPSTONE:
-Edit the following lines to change the goal or adjust initial parameters for "multi-jackal-apf.py"
+Edit the following lines to change the goal or adjust initial parameters for "multi-jackal-apf-astar.py"
 - real_robot = True (sets the pose to a relative odometry frame)
 - goal = [List of goals] (sets the goals for each robot. Length of list is determined by number of robots in the experiment. This goal will either be relative to the robots odometry or global frame depending on value of real_robot)
 - sub_names = [List of subscriber names] (defines the rostopic that the script will listen to for relative pose)
@@ -88,14 +86,6 @@ Edit the following lines to change the goal or adjust initial parameters for "mu
   - d0: the distance threshold for when the robot should move away from an obstacle
   - d1: the distance threshold for when the robot should move away from another vehicle 
 
-#### ASTAR Instructions
-In five separate terminals, run the following - you can use a launch file to combine all the following but it is left separate for interpretation
-```
-roscore
-roslaunch multi_jackal_tutorials two_jackal.launch
-gzclient
-python3 ~/<multi-jackal-ws>/src/multi_jackal_tutorials/scripts/paths_run_astar.py
-python3 ~/<multi-jackal-ws>/src/multi_jackal_tutorials/scripts/multi-jackal-apf-simple.py
 ```
 
 
