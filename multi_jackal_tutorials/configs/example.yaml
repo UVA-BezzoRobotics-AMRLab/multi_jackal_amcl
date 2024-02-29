@@ -1,15 +1,16 @@
 #Yaml config file for the genetic algorithm
 #'cityCoordinates': [[-5,2],[3,-5],[7,3],[-7,-1.5]] # coordinates of cities in map frame (recommend using clicked_point)
 # For priority example:
-'cityCoordinates': [[2,5],[3,-5],[7,3],[-6,-2]] #Stuff coordinates
-# 'cityCoordinates': [[7,3],[3,-5],[-6,-1]]
+'cityCoordinates': [[7,3],[3,-5],[-7,-1.5],[-6,3]]
+# 'cityCoordinates': [[2,5],[3,-5],[7,3],[-6,-2]] #Stuff coordinates
 # EnterAR map
 # 'cityCoordinates': [[-5,-4],[0,7.5],[0,11],[-6,1]]
 'numAgents': 2 # number of agents
 'numCities': 4  # number of cities -> must match the number of cityCoordinates
 'startPose': [[0,0],[0,1]]
 # 'startPose': [[-8,-3],[0,0]] # 2 agents -> not used and updated once subscribed to jackal amcl pose
-'priorities' : [3,0,0,3] # 0-regular,1-slightly important,2-important,3-emergency
+'priorities' : [0,0,0,0] # 0-regular,1-slightly important,2-important,3-emergency
+'taskTimes' : [100,0,0,0] # time to complete each task
 'vels': [1,1] # max velocity of vehicles
 'numGenerations': 20 # number of generations for GA
 'populationSize': 20 # number of children in each generation

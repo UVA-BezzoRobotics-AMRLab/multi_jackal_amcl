@@ -41,6 +41,7 @@ class GA:
         self.vels = string_msg['vels']
         self.cityCoordinates = np.array(string_msg['cityCoordinates'])
         self.priorities = string_msg['priorities']
+        self.taskTimes = string_msg['taskTimes']
         self.start_pub = rospy.Publisher("start_point",PoseWithCovarianceStamped,queue_size=10)
         self.target_pub = rospy.Publisher("final_point",PoseStamped,queue_size=10)
         self.path_sub = rospy.Subscriber("/nav_path",Path, self.nav_path_cb)
@@ -152,30 +153,33 @@ class GA:
                     self.path_received = False
                     dist = self.path_cost / self.vels[k]
 
+                    # Add task times using velocities
+                    task_cost = self.taskTimes[whichCity2] * self.vels[k]
+                    dist += task_cost
+
                     # Prioritization
                     priority = self.priorities[whichCity2]
                     path_index = i
-                    # Linear:
-                    # if numCities > 1:
-                    #     if path_index == 1:
-                    #         totalDist[k] += dist * (1 + (priority / (numCities)))
-                    #     else:
-                    #         totalDist[k] += dist * (1 + priority*(path_index-.1) / (numCities))
-                    # elif numCities == 1:
-                    #     if priority > 1:
-                    #         totalDist[k] += dist / (priority-1)
-                    #     else:
-                    #         totalDist[k] += dist
+                    steepness = 1.5
+                    index_weight = .5
+                    midpoint = numCities/2 #numCities/2 for len(path)/2, string_msg['numCities']/2 for all cities
+
                     # Logarithmic:
-                    if numCities > 1:
-                        dist = dist * (1 + priority * (np.log(1+path_index)/np.log(numCities)))
+                    # if numCities > 1:
+                    #     dist = dist * (1 + priority * (np.log(1+path_index)/np.log(numCities)))
+                    # else:
+                    #     dist = dist
+
+                    # Logistic:
+                    if priority > 0:
+                        dist = dist / (1+math.exp(-steepness*((1/priority) + (index_weight*(path_index-midpoint)))))
                     else:
                         dist = dist
-                    
+                    print(dist)
                     # print(f"Agent {k+1} Path: {pathInds} Total Distance: {dist}")
 
                     self.path_cache[path_key] = {"cost": dist, "path": self.path_from_msg.tolist()}
-                    self.path_cache[(path_key[1], path_key[0])] = {"cost": dist, "path": self.path_from_msg.tolist()[::-1]}
+                    # self.path_cache[(path_key[1], path_key[0])] = {"cost": dist, "path": self.path_from_msg.tolist()[::-1]}
 
                 totalDist[k] += dist
                 print(f"Agent {k+1} Path: {pathInds} Total Distance: {dist}")

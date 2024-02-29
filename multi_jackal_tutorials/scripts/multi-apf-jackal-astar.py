@@ -83,7 +83,7 @@ if __name__ == '__main__':
     template_pub = rospy.Publisher('string_msg', String, queue_size=1,latch=True)
 
     # Create the potential fields in a loop
-    fields = [PotentialField(kappa_attr=1, kappa_rep_obs=-.1, kappa_rep_veh=1.5, d0=2.0, d1=2.0) for i in range(len(sub_names))]
+    fields = [PotentialField(kappa_attr=1, kappa_rep_obs=-.1, kappa_rep_veh=1.5, d0=1.0, d1=2.0) for i in range(len(sub_names))]
 
     # Create the rate
     rate = rospy.Rate(10)
