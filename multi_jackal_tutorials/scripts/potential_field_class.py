@@ -67,7 +67,7 @@ class PotentialField:
             return 0, 0
         # Finalize velocities
         linear_velocity = np.linalg.norm(force)
-        angular_velocity = 3 * theta_desired # 5 is a gain
+        angular_velocity = 5 * theta_desired # 5 is a gain
         angular_velocity = max(min(angular_velocity, math.pi/2), -math.pi/2) # Limit angular velocity to [-pi/2, pi/2]
         linear_velocity = math.cos(angular_velocity) * linear_velocity # Limit linear velocity based on angular velocity
         return linear_velocity, angular_velocity

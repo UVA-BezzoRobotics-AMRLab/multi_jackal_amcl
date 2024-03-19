@@ -42,6 +42,7 @@ class GA:
         self.cityCoordinates = np.array(string_msg['cityCoordinates'])
         self.priorities = string_msg['priorities']
         self.taskTimes = string_msg['taskTimes']
+        self.precedence = string_msg['precedence']
         self.start_pub = rospy.Publisher("start_point",PoseWithCovarianceStamped,queue_size=10)
         self.target_pub = rospy.Publisher("final_point",PoseStamped,queue_size=10)
         self.path_sub = rospy.Subscriber("/nav_path",Path, self.nav_path_cb)
@@ -121,6 +122,7 @@ class GA:
         for k in range(path.shape[1]):
             pathInds = path[:, k][path[:, k] >= 0]
             numCities = len(pathInds)
+            current_dist = 0
             for i in range(numCities+1):
                 if i == 0:
                     whichCity1 = -k-1
@@ -139,12 +141,18 @@ class GA:
                 path_key = (whichCity1, whichCity2)
                 if path_key in self.path_cache:
                     dist = self.path_cache[path_key]["cost"]
+                    # priority based on total distance:
+                    if whichCity2 >= 0:
+                        priority = self.priorities[whichCity2]
+                        if priority > 0:
+                            dist = (current_dist+dist) * (1+priority)
+                    current_dist += dist
                 else:
                     iters = 0
                     while not self.path_received and iters < 10:
                         self.publish_start(city1[0],city1[1],self.start_pub)
                         self.publish_target(city2[0],city2[1],self.target_pub)
-                        rospy.sleep(1)
+                        rospy.sleep(.15)
                         iters+=1
                         # rospy.wait_for_message("/nav_path",Path)
                     if iters >= 10:
@@ -154,15 +162,16 @@ class GA:
                     dist = self.path_cost / self.vels[k]
 
                     # Add task times using velocities
-                    task_cost = self.taskTimes[whichCity2] * self.vels[k]
-                    dist += task_cost
+                    if whichCity2 >= 0:
+                        task_cost = self.taskTimes[whichCity2] * self.vels[k]
+                        dist += task_cost
 
                     # Prioritization
-                    priority = self.priorities[whichCity2]
-                    path_index = i
-                    steepness = 1.5
-                    index_weight = .5
-                    midpoint = numCities/2 #numCities/2 for len(path)/2, string_msg['numCities']/2 for all cities
+                    # priority = self.priorities[whichCity2]
+                    # path_index = i
+                    # steepness = 1.5
+                    # index_weight = .5
+                    # midpoint = numCities/2 #numCities/2 for len(path)/2, string_msg['numCities']/2 for all cities
 
                     # Logarithmic:
                     # if numCities > 1:
@@ -171,14 +180,15 @@ class GA:
                     #     dist = dist
 
                     # Logistic:
-                    if priority > 0:
-                        dist = dist / (1+math.exp(-steepness*((1/priority) + (index_weight*(path_index-midpoint)))))
-                    else:
-                        dist = dist
-                    print(dist)
+                    # if priority > 0:
+                    #     dist = dist * (1+math.exp(-steepness*((1/priority) + (index_weight*(path_index-midpoint)))))
+                    # else:
+                    #     dist = dist
+                    # print(dist)
                     # print(f"Agent {k+1} Path: {pathInds} Total Distance: {dist}")
 
                     self.path_cache[path_key] = {"cost": dist, "path": self.path_from_msg.tolist()}
+                    # Can't reuse distances due to priorities
                     # self.path_cache[(path_key[1], path_key[0])] = {"cost": dist, "path": self.path_from_msg.tolist()[::-1]}
 
                 totalDist[k] += dist
@@ -231,12 +241,29 @@ class GA:
                 fillIdx = random.choice(emptySlots)
                 child[fillIdx, agentChoice] = c
             if np.sum(child == c) > 1:
+                # original:
                 assignedAgents = np.where(np.sum(child == c, axis=0) > 0)[0]
                 keepAgent = random.choice(assignedAgents)
                 for agent in assignedAgents:
                     if agent != keepAgent:
                         whichIdx = np.where(child[:, agent] == c)[0]
                         child[whichIdx, agent] = -1
+        
+        # Ensure precedence constraints are satisfied
+        # for c in range(numCities):
+        #     for constraint in self.precedence[c]:
+        #         constraintIdxs = np.where(child == constraint)[0]
+        #         cIdxs = np.where(child == c)[0]
+        #         # If constraint city is missing or comes after c, adjust the path
+        #         if len(constraintIdxs) == 0 or (len(cIdxs) > 0 and constraintIdxs[0] > cIdxs[0]):
+        #             # Swap c and constraint city in the same agent's path
+        #             for agent in range(numAgents):
+        #                 if c in child[:, agent] and constraint in child[:, agent]:
+        #                     cAgentIdx = np.where(child[:, agent] == c)[0][0]
+        #                     constraintAgentIdx = np.where(child[:, agent] == constraint)[0][0]
+        #                     child[cAgentIdx, agent], child[constraintAgentIdx, agent] = constraint, c
+        #                     break
+
         return child
     
     # Define the fitness function

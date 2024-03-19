@@ -62,7 +62,9 @@ if __name__ == '__main__':
     rospack = rospkg.RosPack()
     # pkg_path = rospack.get_path('multi_jackal_tutorials')
     # pkg_path = "/home/bezzo/multi_amcl_ws/multi_jackal_tutorials"
-    pkg_path = "/home/bezzo/jackal_ws/src/multi_jackal_amcl/multi_jackal_tutorials"
+    # pkg_path = "/home/bezzo/jackal_ws/src/multi_jackal_amcl/multi_jackal_tutorials"
+    # for other computer
+    pkg_path = "/home/carla/jackal_ws/src/multi_jackal_amcl/multi_jackal_tutorials"
     with open(pkg_path + "/configs/example.yaml", "r") as stream:
         try:
             dict_init = eval(json.dumps(yaml.safe_load(stream)))
@@ -83,7 +85,7 @@ if __name__ == '__main__':
     template_pub = rospy.Publisher('string_msg', String, queue_size=1,latch=True)
 
     # Create the potential fields in a loop
-    fields = [PotentialField(kappa_attr=1, kappa_rep_obs=-.1, kappa_rep_veh=1.5, d0=1.0, d1=2.0) for i in range(len(sub_names))]
+    fields = [PotentialField(kappa_attr=.3, kappa_rep_obs=1, kappa_rep_veh=1, d0=1.0, d1=1.0) for i in range(len(sub_names))]
 
     # Create the rate
     rate = rospy.Rate(10)

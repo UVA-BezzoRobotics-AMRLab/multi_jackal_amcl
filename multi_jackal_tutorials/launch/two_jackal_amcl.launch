@@ -11,10 +11,12 @@
   <arg name="config0_id" default="0"/>
   <arg name="config1"    default="front_laser"/>
   <arg name="config1_id" default="1"/>
-  <!-- <arg name="world"      default="stuff.world"/> -->
-  <!-- <arg name="map_file"   default="$(find astar)/maps/stuff3.yaml" /> -->
-  <arg name="world"      default="jackal_race.world"/>
-  <arg name="map_file"   default="$(find astar)/maps/raceworld.yaml" />
+  <arg name="world"      default="stuff.world"/>
+  <arg name="map_file"   default="$(find astar)/maps/capstone_stuff.yaml" />
+  <!-- <arg name="world"      default="maze_house.world"/> -->
+  <!-- <arg name="map_file"   default="$(find astar)/maps/capstone_maze.yaml" /> -->
+  <!-- <arg name="world"      default="jackal_race.world"/> -->
+  <!-- <arg name="map_file"   default="$(find astar)/maps/raceworld.yaml" /> -->
   <!-- <arg name="map_file"   default="$(find astar)/maps/hhmi_merged.yaml" /> -->
 
   <!-- Start Gazebo with an empty world. -->
