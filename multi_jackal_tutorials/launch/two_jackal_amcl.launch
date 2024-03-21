@@ -85,7 +85,7 @@
   </include>  
 
   <!--- Run visualization node-->
-  <node pkg="multi_jackal_tutorials" type="visualize_path" name="visualize_path.py" output="screen" />
+  <node pkg="multi_jackal_tutorials" type="visualize_path.py" name="visualize_path" output="screen" />
   <!-- View in RVIZ. -->
   <group if="$(arg rviz)">
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find multi_jackal_tutorials)/rviz/two_jackal_amcl.rviz" >

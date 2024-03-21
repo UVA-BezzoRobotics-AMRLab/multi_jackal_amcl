@@ -18,8 +18,6 @@ pkg_path = rospack.get_path('multi_jackal_tutorials')
 with open(pkg_path + "/configs/example.yaml", "r") as stream:
     try:
         dict_tasks = eval(json.dumps(yaml.safe_load(stream)))
-        print("The dictionary of tasks is: ")
-        print(dict_tasks)
     except yaml.YAMLError as exc:
         print(exc)
 
@@ -29,8 +27,6 @@ paths = {}
 def path_cb(msg):
     global paths
     paths = eval(msg.data) 
-    print("The shape of the paths is: ")  
-    print(len(paths))
     for i in range(len(paths)):
         if len(paths[i]) == 0:
             continue
@@ -92,8 +88,6 @@ def assigned_tasks_cb(msg):
             marker.color.b = dict_tasks['robotColors'][i][2]
             marker_array.markers.append(marker)
         pub_path_markers[i].publish(marker_array)
-    print("The assigned tasks are: ")
-    print(assignments)
     
 
 
