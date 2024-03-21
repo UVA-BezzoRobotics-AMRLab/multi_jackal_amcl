@@ -18,7 +18,7 @@ real_robot = False
 global pos, ori, paths, pos_received, obs_info
 pos = [np.array([0., 0.]), np.array([0., 0.])]
 obs_info = [None, None]
-pos_received = False
+pos_received = [False, False]
 ori = [0., 0.]
 paths = []
 
@@ -27,7 +27,7 @@ def pos_cb(msg, args):
     global pos, ori, pos_received
     pos[args]    = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
     ori[args]    = euler_from_quaternion([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])[2]
-    pos_received = True
+    pos_received[args] = True
 
 def path_cb(msg):
     global paths
@@ -99,13 +99,16 @@ if __name__ == '__main__':
     # Main loop
     while not rospy.is_shutdown():
         # Check if best paths is empty
-        if pos_received:
+        if all(pos_received):
             # Create the message
             dict_init['startPose'] = [[pos[i][0], pos[i][1]] for i in range(len(sub_names))]
             dict_msg = str(dict_init)
             # Publish the message
             template_pub.publish(dict_msg)
             dict_init['new_run'] = False
+        else:
+            rate.sleep()
+            continue
 
 
         # Check if the paths are published by astar node
