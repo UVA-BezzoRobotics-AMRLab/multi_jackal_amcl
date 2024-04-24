@@ -12,7 +12,7 @@
     <node pkg="astar" type="test_astar" name="test_astar" output="screen">
         <param name="Euclidean" value="true"/>
         <param name="OccupyThresh" value="-1"/>
-        <param name="InflateRadius" value="0.55"/>
+        <param name="InflateRadius" value="0.45"/>
         <param name="rate" value="10"/>
     </node>
 

@@ -99,25 +99,98 @@ class GA:
         sub.publish(target)
 
     def generateUniquePaths(self):
+        # paths = np.zeros((self.numCities, self.numAgents), dtype=int) - 1
+        # remainingCities = np.arange(0, self.numCities)
+
+        # # agent_cycle = cycle(range(self.numAgents))
+        
+        # for _ in range(self.numCities):
+        #     randomChoice = random.choice(range(len(remainingCities)))
+        #     agent = random.choice(range(self.numAgents))
+            
+        #     # Find the next available slot for the agent
+        #     available_slot = np.where(paths[:, agent] == -1)[0][0]
+
+        #     paths[available_slot, agent] = remainingCities[randomChoice]
+        #     remainingCities = np.delete(remainingCities, randomChoice)
+
+        # return paths
+
         paths = np.zeros((self.numCities, self.numAgents), dtype=int) - 1
         remainingCities = np.arange(0, self.numCities)
 
-        # agent_cycle = cycle(range(self.numAgents))
+        agent_cycle = cycle(range(self.numAgents))
+
+        temp_prec = np.copy(self.precedence)
         
-        for _ in range(self.numCities):
+        while remainingCities.size > 0:
+
             randomChoice = random.choice(range(len(remainingCities)))
-            agent = random.choice(range(self.numAgents))
+            randomCity = remainingCities[randomChoice]
+            prec_cities = [i for i, sublist in enumerate(temp_prec) if sublist]
+            if prec_cities:
+                if randomCity in prec_cities:
+                    randomCity = random.choice(prec_cities)
+                    randomChoice = np.where(remainingCities == randomCity)[0][0]
+            
+            agent = next(agent_cycle)
             
             # Find the next available slot for the agent
             available_slot = np.where(paths[:, agent] == -1)[0][0]
 
-            paths[available_slot, agent] = remainingCities[randomChoice]
-            remainingCities = np.delete(remainingCities, randomChoice)
+            if temp_prec[remainingCities[randomChoice]]:
+
+                for i in range(len(temp_prec[remainingCities[randomChoice]])):
+                    randChoiceAssigned = False
+                    available_slot = np.where(paths[:, agent] == -1)[0][0]
+                    prec_city = temp_prec[remainingCities[randomChoice]][i]
+                    prec_city_pos = np.where(remainingCities == prec_city)[0]
+
+                    if prec_city_pos.size > 0 and prec_city in remainingCities:
+                        paths[available_slot, agent] = remainingCities[prec_city_pos[0]]
+                        remainingCities = np.delete(remainingCities, prec_city_pos[0])
+                        randomChoice = np.where(remainingCities == randomCity)[0][0]
+                    elif prec_city not in remainingCities:
+
+                        temp_prec[remainingCities[randomChoice]] = []
+
+                        prec_city_agent = np.where(paths == prec_city)[1][0]
+                        available_slot = np.where(paths[:, prec_city_agent] == -1)[0][0]
+                        paths[available_slot, prec_city_agent] = remainingCities[randomChoice]
+                        remainingCities = np.delete(remainingCities, randomChoice)
+                        randChoiceAssigned = True
+                        
+
+                if not randChoiceAssigned:
+                    temp_prec[remainingCities[randomChoice]] = []
+
+                    available_slot = np.where(paths[:, agent] == -1)[0][0]
+                    paths[available_slot, agent] = remainingCities[randomChoice]
+                    remainingCities = np.delete(remainingCities, randomChoice)
+
+            else:
+                paths[available_slot, agent] = remainingCities[randomChoice]
+                remainingCities = np.delete(remainingCities, randomChoice)
 
         return paths
     
     def totalDistance(self, path):
         global path_received
+
+        # if any(sublist for sublist in self.precedence):
+        #     for city in np.arange(len(self.cityCoordinates)):
+        #         for prec_city in self.precedence[city]:
+        #             for agent in range(path.shape[1]):
+        #                 if prec_city in path[:, agent]:
+        #                     cityIdx = np.where(path == city)[0][0]
+        #                     precCityIdx = np.where(path[:, agent] == prec_city)[0][0]
+        #                     city_agent = np.where(path[cityIdx, :] == city)[0][0]
+        #                     prec_city_agent = np.where(path[precCityIdx, :] == prec_city)[0][0]
+        #                     if not city_agent == prec_city_agent:
+        #                         return float('inf')
+        #                     elif cityIdx < precCityIdx:
+        #                         return float('inf')
+
         totalDist = np.zeros(path.shape[1])
         for k in range(path.shape[1]):
             pathInds = path[:, k][path[:, k] >= 0]
@@ -211,13 +284,32 @@ class GA:
         numCities = parent1.shape[0]
         child1 = np.copy(parent1)
         child2 = np.copy(parent2)
+        validCrossover = True
 
         for k in range(self.numAgents):
             crossoverPoint1 = random.randint(1, numCities - 1)
             crossoverPoint2 = random.randint(crossoverPoint1 + 1, numCities)
 
-            child1[crossoverPoint1:crossoverPoint2, k] = parent2[crossoverPoint1:crossoverPoint2, k]
-            child2[crossoverPoint1:crossoverPoint2, k] = parent1[crossoverPoint1:crossoverPoint2, k]
+            if all(not sublist for sublist in self.precedence):
+                validCrossover = True
+            else:
+                for c in range(numCities):
+                    if self.precedence[c]:
+                        for constraint in self.precedence[c]:
+                            if c in parent1[crossoverPoint1:crossoverPoint2, k] or constraint in parent1[crossoverPoint1:crossoverPoint2, k]:
+                                validCrossover = False
+                                break
+                if validCrossover:
+                    for c in range(numCities):
+                        if self.precedence[c]:
+                            for constraint in self.precedence[c]:
+                                if c in parent2[crossoverPoint1:crossoverPoint2, k] or constraint in parent2[crossoverPoint1:crossoverPoint2, k]:
+                                    validCrossover = False
+                                    break
+            
+            if validCrossover:
+                child1[crossoverPoint1:crossoverPoint2, k] = parent2[crossoverPoint1:crossoverPoint2, k]
+                child2[crossoverPoint1:crossoverPoint2, k] = parent1[crossoverPoint1:crossoverPoint2, k]
 
         return child1, child2
 
@@ -248,21 +340,47 @@ class GA:
                     if agent != keepAgent:
                         whichIdx = np.where(child[:, agent] == c)[0]
                         child[whichIdx, agent] = -1
-        
-        # Ensure precedence constraints are satisfied
-        # for c in range(numCities):
-        #     for constraint in self.precedence[c]:
-        #         constraintIdxs = np.where(child == constraint)[0]
-        #         cIdxs = np.where(child == c)[0]
-        #         # If constraint city is missing or comes after c, adjust the path
-        #         if len(constraintIdxs) == 0 or (len(cIdxs) > 0 and constraintIdxs[0] > cIdxs[0]):
-        #             # Swap c and constraint city in the same agent's path
-        #             for agent in range(numAgents):
-        #                 if c in child[:, agent] and constraint in child[:, agent]:
-        #                     cAgentIdx = np.where(child[:, agent] == c)[0][0]
-        #                     constraintAgentIdx = np.where(child[:, agent] == constraint)[0][0]
-        #                     child[cAgentIdx, agent], child[constraintAgentIdx, agent] = constraint, c
-        #                     break
+
+        # Check precedence constraints
+        if any(sublist for sublist in self.precedence):
+            childtest = np.copy(child)
+            for c in range(numCities):
+                if not self.precedence[c] == []:
+                    for constraint in self.precedence[c]:
+                        constraintIdxs = np.where(child == constraint)[0]
+                        cIdxs = np.where(child == c)[0]
+                        # If constraint city comes after c, adjust the path
+                        if (len(cIdxs) > 0 and len(constraintIdxs) > 0 and constraintIdxs[0] > cIdxs[0]):
+                            # Swap c and constraint city in the same agent's path
+                            whereC = np.where(child == c)
+                            whereConstraint = np.where(child == constraint)
+                            preC = child[:whereC[0][0]]
+                            rowC = child[whereC[0][0]]
+                            rowCtoConstraint = child[whereC[0][0]+1:whereConstraint[0][0]]
+                            rowConstraint = child[whereConstraint[0][0]]
+                            postConstraint = child[whereConstraint[0][0]+1:]
+                            childtest = np.vstack((preC,rowCtoConstraint,rowConstraint,rowC,postConstraint))
+            # Now check for precedence constraints between agents and adjust the agent's path with the constraint
+            for c in range(numCities):
+                if not self.precedence[c] == []:
+                    for constraint in self.precedence[c]:
+                        constraintIdxs = np.where(childtest == constraint)[0]
+                        cIdxs = np.where(childtest == c)[0]
+                        # If constraint city comes after c, adjust the path
+                        if (len(cIdxs) > 0 and len(constraintIdxs) > 0 and constraintIdxs[0] > cIdxs[0]):
+                            # Swap c and constraint city in the same agent's path
+                            whereC = np.where(childtest == c)
+                            whereConstraint = np.where(childtest == constraint)
+                            preC = childtest[:whereC[0][0],whereConstraint[1][0]]
+                            rowC = childtest[whereC[0][0],whereConstraint[1][0]]
+                            rowCtoConstraint = childtest[whereC[0][0]+1:whereConstraint[0][0],whereConstraint[1][0]]
+                            rowConstraint = childtest[whereConstraint[0][0],whereConstraint[1][0]]
+                            postConstraint = childtest[whereConstraint[0][0]+1:,whereConstraint[1][0]]
+                            childtest[:,whereConstraint[1][0]] = np.hstack((preC,rowCtoConstraint,rowConstraint,rowC,postConstraint))
+            if childtest.shape[0] != numCities:
+                s = 1
+                print("NOT GOOD")
+            child = childtest
 
         return child
     
