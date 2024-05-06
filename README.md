@@ -1,4 +1,4 @@
-## Evolutionary-based Coordination of Multi-Robot Systems with Dynamic Constraints in Ubuntu 20/ROS Noetic
+## Evolutionary-based Coordination of Multi-Robot Systems with Dynamic Constraints
 
 In this repository, we provide the code for our results in our paper titled ``Evolutionary-based Coordination of Multi-Robot Systems with Dynamic Constraints."  Our solution incorporates: a digital twin of a monitored environment, A* and artificial potential field methods for path planning and navigation, and human-in-the-loop prioritization. A copy of the paper is provided in this repository [here](https://github.com/UVA-BezzoRobotics-AMRLab/multi_jackal_amcl/blob/main/Evolutionary-based_Coordination_of_Multi-Robot_Systems_with_Dynamic_Constraints.pdf).
 
